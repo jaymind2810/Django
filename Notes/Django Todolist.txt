@@ -1,0 +1,361 @@
+Django is free and open source web Framework written in Python.
+Django use MVC model.
+	[Model
+	View
+	Controller] 
+
+Url Pattrrns ==> Views ==> Templates
+		Models
+
+///////////////////////////Project Directory///////////////////////
+=>Create directory
+	mkdir todoapp
+==> Create virtual Environment..
+	python -m venv venv
+==>Activate Virtual Environment..
+	C:\Users\HP\Desktop\django\todoapp>cd venv\Scripts
+	C:\Users\HP\Desktop\django\todoapp\venv\Scripts>activate
+	(venv) C:\Users\HP\Desktop\django\todoapp\venv\Scripts>cd..
+	(venv) C:\Users\HP\Desktop\django\todoapp\venv>cd..
+	(venv) C:\Users\HP\Desktop\django\todoapp>
+==>upgrade pip..
+	python -m pip install --upgrade pip
+
+==>Install Django..
+	pip install django
+==If we want to install perticular version of django in project
+  so, we first create requirement.txt file and define version of django..
+  like..
+	Django~=2.0.6
+  Then, run this command..
+	pip install -r requirements.txt
+==>Check the Version of Django..
+	Python -m django --version
+
+///////////////////////////////Django//////////////////////////////////
+Diff between Django App    VS    Django Project...
+
+Django Project has all django apps...
+Example=> Instagram is Django project..
+	but Instagram loginsystem,insta session, authenticattion,etc... are django apps
+
+==>Create django project...[here, mysite is project name]
+	django-admin startproject mysite .
+
+==> Starting Django Development Server....
+	python manage.py runserver
+   =By default server run on port number = 8000 if we want to change it ..
+	python manage.py runserver 8080 
+
+//////////////////////////////Migration///////////////////////////
+	=Django uses migration to propagate changes to your model into your data basw schema.
+	==migration Commands:=
+	migrate = Applies and unapples migrations
+	makemigrations = Create new migration based on chages you make your models.
+	sqlmigrate = Displays the sql statements and their status.
+	showmigrations = lists a projcts migrations their status.
+
+==>Show migrations:=
+	python manage.py showmigrations
+==>Apply migration in project:=
+	python manage.py migrate
+
+///////////////////Django App///////////////////////////
+==>create django app:=[here, todolist is app name]
+	django-admin startapp todolist
+==>Activate app:=
+   =for activating app we go to project[mysite] then open
+    Settings.py file and add new created app name[todolist] at
+    Installed app list[INSTALLED_APP].
+
+///////////////////////Super User/////////////////////////
+Django comes with built-in administrative interface page.
+Django superuser is used to manage the Django admin page.
+==>Create super user:=
+	python manage.py createsuperuser
+  ==After enter, give details of to create superuser login details
+	Username (leave blank to use 'jaymin'):
+	Email address: jaymind281098@gmail.com
+	Password: jaymin123
+	Password (again): jaymin123
+	The password is too similar to the username.
+	Bypass password validation and create user anyway? [y/N]: y
+	Superuser created successfully.
+	
+///////////////////////////////Templates////////////////////////////////
+=>template contains static parts of desired HTML output.
+=>also has some special Syntax for dynamic content.
+=>special template tags{% tags %}
+=>special templates variable{{ variable }}
+=>special template variable and filters: {{ variable | filter  }}
+
+==>Add templates in Django project directory:=
+	App_directory[todolist] => templates => app_directory_name[todolist] => add index.html
+	App_directory[todolist] => static => app_directory_name[todolist] => add bootstrap,css,js
+
+/////////////////////////////Views////////////////////
+==>open views.py file add views function:=
+	def index(request):
+	    return render(request,'todolist/index.html')
+
+//////////////////////////url////////////////////////
+==>Url stands for uniform resource locator.it is website address.
+==>Add url for app:
+==>first, include import in urls.py file of Project[mysite] directory in project:=
+	from django.urls import path,include
+==>Second, Add intire project url in urlpatters list:=
+	urlpatterns = [
+    		path('admin/', admin.site.urls),
+    		path('',include('todolist.urls'))
+	]
+==>Third, create urls.py file in app directory[todolist] and add content from mysite/url.py file
+	from django.urls import path
+	from . import views
+	
+	urlpatterns = [
+	    path('',views.index,name='index')
+	]
+==>After, add some new page in project always restart development server
+
+/////////////////////////Static Files////////////////////////
+=={{% load static %}} used to define static filest
+==> Add static files in project:
+   = in project index.html file add some static file code
+	{% load static %}
+	<link rel="stylesheet" href="{% static 'todolist/style.css' %}">
+
+///////////////////////////////Django models////////////////////////////
+=>Django models are python classes that allows us to save data inside a database
+=>Each object is arow in a table
+=>model is single source of information about your data
+=>model contains the behaviour of the data you are storing
+=>each model maps to a single database table
+=>model is a python class that subclass django.db.models.Model
+=>Each attribute of the model represent a databse field.
+===>Example:=
+	from django.db import models
+	class Person(models.Model):
+		first_name = models.CharField(max_length=30)
+		last_name = models,CharField(max_length=30)
+
+	CREATE TABLE myapp_person(
+	"id" serial NOT NULL PRIMARY KEY,
+	"first_name" varchar(30) NOT NULL,
+	"last_name" varchar(30) NOT NULL
+	);
+==Above code perform automatically create below database type code.
+
+//////////////////////////////////////////Create Models////////////////////
+==>>Create models in todolist app:=
+  =Add some code in app directory[todolist] models.py in file
+	from django.db import models
+	class Todolist(models.Model):
+		text = models.CharField(max_length=45)
+		completed = models.BooleanField(default=False)
+	def __str__(self):
+		return self.text
+==>create migratation in todolist app's in migration directory run below command:
+	python manage.py makemigrations
+then, migrate in migration directory in todolist app
+	python manage.py migrate
+
+==> Add models to in admin administartion so add below code in admin.py file
+	from django.contri import admin
+	from .models import Todolist
+
+	admin.site.register(Todolist)
+
+
+////////////////////////////Show data on index page from database/////////////////////////
+==>>Change views.py file as below
+	from django.shortcuts import render
+	from .models import Todolist
+	def index(request):
+    		todo_items = Todolist.objects.order_by('id')
+    		context = {'todo_items': todo_items}
+    		return render(request,'todolist/index.html',context)
+==> Add forloop in index.html page
+	{% for todolist in todo_items %}
+                <li>{{todolist.text}}</li>
+                {% endfor %}
+
+/////////////////////////////setting for background for completed task/////////////
+==>index.html
+
+	<div>
+            <ul>
+                {% for todolist in todo_items %}
+                    {% if todolist.completed %}
+                        <li class="todo_completed">{{todolist.text}}</li>
+                    {% else %}
+                        <a href="#"><li>{{ todolist.text }}</li></a>
+                    {% endif %}
+                {% endfor %}
+                <br>
+                <li class="">Something End with this list</li>
+            </ul>
+        </div>
+
+//////////////////////Adding a Form//////////////////////////
+==>forms.py
+
+from typing import Text
+from django import forms
+from django.forms import widgets
+
+class TodoListForm(forms.Form):
+    text = forms.CharField(max_length=45,
+        widget=forms.TextInput(
+            attrs={'class':'form-control','placeholder':'Enter todo','aria-label':'Todo','aria-describeby':'add-btn'}
+        ))
+
+///////////////////////////Adding form to template and view//////////////////////
+==> index.html
+
+	<form action="{% url 'add' %}" method="POST" role="form">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="input-group">
+                    {{ form.text }}
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default" id="add-btn">ADD</button>
+                    </span>
+                </div>
+            </div>
+
+        </form>
+
+==> views.py
+
+from typing import Text
+from django.shortcuts import redirect, render
+from .models import Todolist
+from .forms import TodoListForm
+from django.views.decorators.http import require_POST
+
+from todolist import forms
+# Create your views here.
+def index(request):
+    todo_items = Todolist.objects.order_by('id')
+    form = TodoListForm()
+    context = {'todo_items': todo_items,'form':form}
+    return render(request,'todolist/index.html',context)
+
+/////////////////////Capturing data from input////////////////////
+==> views.py
+
+from django.views.decorators.http import require_POST
+
+@require_POST
+def addTodoItem(request):
+    form = TodoListForm(request.POST)
+    print(request.POST['text'])
+    return redirect('index')
+
+==> urls.py
+
+urlpatterns = [
+    path('',views.index,name='index'),
+    path('add',views.addTodoItem,name='add')
+]
+
+==> index.html
+
+<form action="{% url 'add' %}" method="POST" role="form">
+
+////////////////////Adding form input to database//////////////////
+==>views.py
+
+@require_POST
+def addTodoItem(request):
+    form = TodoListForm(request.POST)
+    print(request.POST['text'])
+    if form.is_valid():
+        new_todo = Todolist(text=request.POST['text'])
+        new_todo.save()
+    return redirect('index')
+
+///////////////Create view function for completed Task//////////////////
+==> views.py
+def completedTodo(request,todo_id):
+    todo = Todolist.objects.get(pk=todo_id)
+    todo.completed = True
+    todo.save()
+    return redirect('index')
+
+==>urls.py
+urlpatterns = [
+    path('',views.index,name='index'),
+    path('add',views.addTodoItem,name='add'),
+    path('completed/<todo_id>',views.completedTodo,name='completed')
+]
+
+==>index.html
+	<ul>
+                {% for todolist in todo_items %}
+                    {% if todolist.completed %}
+                        <li class="todo_completed">{{todolist.text}}</li>
+                    {% else %}
+                        <a href="{% url 'completed' todolist.id %}"><li>{{ todolist.text }}</li></a>
+                    {% endif %}
+                {% endfor %}
+                <br>
+                <li class="">Something End with this list</li>
+            </ul>
+
+///////////////////Delete Completed task///////////////
+==>views.py
+def deleteCompleted(request):
+    T1=Todolist.objects.filter(completed__exact=True)
+    print(T1)
+    T1.delete()
+    return redirect('index')
+
+==>urls.py
+path('deletecompleted',views.deleteCompleted,name='deletecompleted')
+
+==>index.html
+	<div class="row t10">
+            <div class="btn-group">
+                <a href="{% url 'deletecompleted' %}">
+                    <button type="button" class="btn btn-warning">DELETE COMPLETED
+                    </button></a>
+            </div>
+
+/////////////////////////DELETE ALL///////////////////////////////////////////
+==>views.py
+def deleteAll(request):
+    T2 = Todolist.objects.all()
+    print(T2)
+    T2.delete()
+    return redirect('index')
+
+==>urls.py
+path('deleteall',views.deleteAll,name='deleteall')
+
+==>index.html
+	<div>
+                <a href="{% url 'deleteall' %}">
+                    <button type="button" class="btn btn-transh">
+                        DELETE ALL
+                    </button>
+                </a>
+            </div>
+
+
+
+
+///////////////////////////////Deploying on internet//////////////////////////
+===>We use pythonanywhere.com for deploying app
+	username : jayminpatel2810
+	Email : jaymind281098@gmail.com
+	password : 82382jdpatel
+
+==>Api Token:
+	cf1246f5dbe7c337f3556f33845f5380f968b314
+
+==>Pa_autoconfigure used for deployment of app to the internet.
+== clik on bash console to open then run this command
+	pip3.7 install --user pythonanywhere
+== Then, run below command
+	pa_autoconfigure_django.py https://github.com/jayminpatel2810/todoapp

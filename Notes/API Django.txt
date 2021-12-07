@@ -1,0 +1,224 @@
+/////////////////////What is Api////////////////////////////////////////////
+== Api: Application Programming Interface
+   Set of rules(code) and specifications that software follow to communicate with each other.
+==>CMD basic coomand to create project
+
+C:\Users\HP\Desktop\django\countriesAPI>python -m venv myvenv
+
+C:\Users\HP\Desktop\django\countriesAPI>cd myvenv\Scripts
+
+C:\Users\HP\Desktop\django\countriesAPI\myvenv\Scripts>Activate
+
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI\myvenv\Scripts>cd..
+
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI\myvenv>cd..
+
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI>python -m pip install --upgrade pip
+Requirement already satisfied: pip in c:\users\hp\desktop\django\countriesapi\myvenv\lib\site-packages (21.1.1)
+Collecting pip
+  Using cached pip-21.1.2-py3-none-any.whl (1.5 MB)
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 21.1.1
+    Uninstalling pip-21.1.1:
+      Successfully uninstalled pip-21.1.1
+Successfully installed pip-21.1.2
+
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI>pip install django
+Collecting django
+  Using cached Django-3.2.4-py3-none-any.whl (7.9 MB)
+Collecting sqlparse>=0.2.2
+  Using cached sqlparse-0.4.1-py3-none-any.whl (42 kB)
+Collecting pytz
+  Using cached pytz-2021.1-py2.py3-none-any.whl (510 kB)
+Collecting asgiref<4,>=3.3.2
+  Using cached asgiref-3.3.4-py3-none-any.whl (22 kB)
+Installing collected packages: sqlparse, pytz, asgiref, django
+Successfully installed asgiref-3.3.4 django-3.2.4 pytz-2021.1 sqlparse-0.4.1
+
+//////////////////////////////////Django REST framework///////////////////////////////
+==Django Rest Framework is powerfull and flexibal toolkit for building we Apis.
+==>install Rest Framework.
+	pip install djangorestframework
+
+///////////////////Again run next cmd command for create project////////////////
+==> Cmd Command after installing djangorestframework
+
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI>django-admin startproject worldCountries .
+
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI>python manage.py startapp countries
+
+==Then,Register app in Django so add below code in settings.py at INSTALLED_APPS
+    'rest_framework',
+    'countries.apps.CountriesConfig',
+    'corsheaders',
+
+=====Middleware in Setting.py////////////////////////
+==> Middleware is framework of hooks into django request/response Processing.
+== It is a light, low-level "plugin" system for globally altering Django input or output.
+	Ex. middleware component is responsible for doing some specific function.
+		Ex. Django includes a middleware component, AuthenticationMiddleware, that
+		assiciate users with request using session.
+==>Then, Add class in setting.py at MIDDLEWARE
+	'corsheaders.CorsMiddleware'
+
+////////////////////////Postgresql//////////////////////////////////////
+==>Create countriesdb database in postgresql
+==>Add Adapter:
+	pip install psycopg2
+==>THEN,Configure database settings.
+==>In section of worldCountries/setting.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'countriesdb',
+        'USER':'postgres',
+        'PASSWORD':'jaymin123',
+        'HOST':'localhost',
+        'PORT': '5432',
+    }
+
+==>Applies migratation
+	python manage.py migrate
+
+==>For Create model
+	models.py
+class Countries(models.Model):
+    name = models.CharField(max_length=50,blank=False,default='')
+    capital = models.CharField(max_length=50, blank=False,default='')
+
+    def __str__(self):
+	return self.name
+
+    class Meta:
+        ordering = ('id',)
+
+==>Appling new created model migrate:
+	python manage.py makemigrations
+	python manage.py migrate
+
+////////////////////////Serialization//////////////////////////////
+==>What are serialization:=
+	They allow complex data sunch as querysets and model instance to be converted to native
+     Python data types that can be easily rendered into JSON, XML, or other content type.
+ 	Serialize also provide deserialization, allowing parsed data to be converted back into complex types,after
+     first validating the incoming data.
+==>create file serializers.py file
+from django.db import models
+from django.db.models import fields
+from rest_framework import serializers
+from countries.models import Countries
+
+class CountriesSerializer(serializers.ModelSerializer):
+
+    class Meta :
+        model = Countries
+        fields = ('id','name','capital')
+
+//////////////////Create SuprUser/////////////////////////////////
+(myvenv) C:\Users\HP\Desktop\django\countriesAPI>python manage.py createsuperuser
+Username (leave blank to use 'jaymin'):
+Email address: jaymind281098@gmail.com
+Password:
+Password (again):
+The password is too similar to the username.
+Bypass password validation and create user anyway? [y/N]: y
+Superuser created successfully.
+
+///////////////////////////////Views//////////////////////////////
+==>views.py
+from django.shortcuts import render
+from django.http.response import JsonResponse
+from rest_framework.parsers import JSONParser
+from rest_framework import status
+
+from countries.models import Countries
+from countries.serializers import CountriesSerializer
+from rest_framework.decorators import api_view
+
+# Create your views here.
+
+@api_view(['GET','POST'])
+def countries_list(request):
+    if request.method == 'GET':
+        countries = Countries.objects.all()
+
+        name = request.GET.get('name',None)
+        if name is not None:
+            countries = countries.filter(name__icontains=name)
+
+        countries_serializer = CountriesSerializer(countries,many=True)
+        return JsonResponse(countries_serializer.data, safe=False)
+        
+    elif request.method == 'POST':
+        countries_data = JSONParser().parse(request)
+        countries_serializer = CountriesSerializer(data=countries_data)
+        if countries_serializer.is_valid():
+            countries_serializer.save()
+            return JsonResponse(countries_serializer.data,status=status.HTTP_201_CREATED)
+        return JsonResponse(countries_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','PUT','DELETE'])
+def countries_detail(request,pk):
+    try:
+        countries = Countries.objects.get(pk=pk)
+    except:
+        return JsonResponse({'message':'The country does not exits.'},status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        countries_serializer = CountriesSerializer(countries)
+        return JsonResponse(countries_serializer.data)
+
+    elif request.method == 'PUT':
+        countries_data = JSONParser().parse(request)
+        countries_serializer = CountriesSerializer(countries,data=countries_data)
+        if countries_serializer.is_valid():
+            countries_serializer.save()
+            return JsonResponse(countries_serializer.data)
+        return JsonResponse(countries_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE' :
+        countries.delete()
+        return JSONParser({'message':'Country was deleted successfully!'},status=status.HTTP_204_NO_CONTENT)
+
+//////////////////////////////////////Mapping URL///////////////////////////////
+==>methods Work:
+	localhost/api/countries		GET | POST		views.countries_list
+	localhost/api/countries/id      GET | PUT | DELETE	views.countries_details
+	localhost/admin			GET			admin.site.urls
+
+==> urls.py in worldCountries add below code.
+from django.contrib import admin
+from django.urls import path
+from django.conf.urls import url, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    url(r'^',include('countries.urls')),
+]
+
+==>urls.py in countries add below code.
+from django.conf.urls import url
+from countries import views
+
+urlpatterns = [
+    url(r'^api/countries$',views.countries_list),
+    url(r'^api/countries/(<pk>[0-9]+)$', views.countries_detail)
+]
+
+////////////////////////////////registering modesls///////////////////////////
+==>admin.py 
+from django.contrib import admin
+from .models import Countries
+
+# Register your models here.
+admin.site.register(Countries)
+
+///////////////Testing in POSTMAN//////////////
+
+
+
+
+
+

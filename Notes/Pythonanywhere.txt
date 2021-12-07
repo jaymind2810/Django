@@ -1,0 +1,23 @@
+===>We use pythonanywhere.com for deploying app
+	username : jayminpatel2810
+	Email : jaymind281098@gmail.com
+	password : 82382jdpatel
+
+
+===>> Token Api:= Todolist app in django...
+import requests
+username = 'jayminpatel2810'
+token = 'cf1246f5dbe7c337f3556f33845f5380f968b314'
+
+response = requests.get(
+    'https://www.pythonanywhere.com/api/v0/user/{username}/cpu/'.format(
+        username=username
+    ),
+    headers={'Authorization': 'Token {token}'.format(token=token)}
+)
+if response.status_code == 200:
+    print('CPU quota info:')
+    print(response.content)
+else:
+    print('Got unexpected status code {}: {!r}'.format(response.status_code, response.content))
+       
