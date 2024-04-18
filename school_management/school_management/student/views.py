@@ -200,6 +200,20 @@ def submit_form(request):
     return render(request, "student_home.html", {"form": form})
 
 
+def update_student_form(request, id):
+
+    all_data = Students.objects.all()
+    print(all_data, "-------all ")
+
+    Student = Students.objects.get(id=id)
+    print(Student)
+    context = {}
+    context['form'] = StudentsForm(Student)
+    return render(request, "student_home.html", context)
+
+
+
+
 def success(request):
     return render(request, "success.html", {})
 

@@ -7,11 +7,19 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
 class Students(models.Model):
+
+    gender = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other'),
+    ]
+
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     address = models.CharField(max_length=200)
     roll_number = models.IntegerField()
     mobile = models.CharField(max_length=10)
+    gender = models.CharField(choices=gender, default='Male', max_length=10)
     available_join = models.DateField(null=True)
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)

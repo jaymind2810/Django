@@ -5,14 +5,22 @@ from .models import Students
 class StudentsForm(forms.ModelForm):
     # each field would be mapped as an input field in HTML
 
+    gender = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other'),
+    ]
+
     address = forms.CharField(widget=forms.Textarea)
     roll_number = forms.IntegerField(widget=forms.TextInput)
     available_join = forms.DateField(widget=forms.SelectDateWidget)
-    available = forms.BooleanField(widget=forms.Textarea)
+    available = forms.BooleanField()
+    gender = forms.ChoiceField(widget=forms.RadioSelect, choices=gender)
 
     class Meta:
         model = Students
         fields = "__all__"
+        exclude = ["user"]
 
 
     def clean(self):

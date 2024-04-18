@@ -97,8 +97,24 @@
 
 	
 
+==========> Load Initial Data :----------------------
+	
+	- Create fixtures directory and create yml / xml / json file for load data.
+	- Django looks for fixtures in the fixtures directory inside each app for, so the command===>    loaddata sample     will find the file my_app/fixtures/sample.json. This works with relative 			paths as well, so===>   loaddata my_app/sample will find the file my_app/fixtures/my_app/sample.json.
+	
+	python3 manage.py loaddata student
+	
+	
+===============> Dump Database =================================
 
+	- Create Dump File---
 
+	python3 manage.py dumpdata --natural-foreign --natural-primary -e auth.Permission --indent 4 > project_dump.json
+	
+	- Load Dump data----
+	
+	python3 manage.py loaddata -i project_dump.json
+	
 
 	
 

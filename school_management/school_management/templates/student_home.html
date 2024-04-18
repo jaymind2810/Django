@@ -13,27 +13,34 @@
         <h2>Student Registration Form</h2>
         <form action="{% url 'submit_form' %}" method = "post">
             {% csrf_token %}
-
             {% if form.errors %}
 
               <div class="alert alert-danger alart-dismissable" role ="alert">
                {% for field in form %}
-                {% if field.errors %}
-                    {{ field.errors }}
-                {% endif%}
-
+                    {% if field.errors %}
+                        {{ field.errors }}
+                    {% endif%}
                 {% endfor %}
-
-
               </div>
 
           {% endif %}
 
 
 
-            <table>
-                {{ form.as_table }}
-            </table>
+
+
+        {% for field in form %}
+            <div class="fieldWrapper">
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field }}
+            </div>
+        {% endfor %}
+
+
+
+<!--            <table>-->
+<!--                {{ form.as_table }}-->
+<!--            </table>-->
 <!--            {{ form.as_p }}-->
 <!--            {{ form.as_ul }}-->
         <input type="submit" value="Submit">

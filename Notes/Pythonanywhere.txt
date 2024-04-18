@@ -2,6 +2,12 @@
 	username : jayminpatel2810
 	Email : jaymind281098@gmail.com
 	password : 82382jdpatel
+	
+====> New account We use pythonanywhere.com for deploying app
+	username : jaymin2810
+	Email : jaymind2810@gmail.com
+	password : 82382JDp@tel
+
 
 
 ===>> Token Api:= Todolist app in django...

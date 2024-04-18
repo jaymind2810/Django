@@ -14,10 +14,8 @@ Createing Django project:=
 	python -m pip install --upgrade pip
 	pip install django
 	Python -m django --version
-  {[ ==If we want to install perticular version of django in project
-  so, we first create requirement.txt file and define version of django..
-  like..
-	Django~=2.0.6
+ 
+	Django~=2.0.6 [Use For particular version]
   Then, run this command..
 	pip install -r requirements.txt ]}
 
@@ -42,25 +40,21 @@ Createing Django project:=
 
 /////////////////Create Project////////////////////////////////////
 ==>Third, create Project:=
-  {[ ==Django Project has all django apps...
-     Example=> Instagram is Django project..
-	but Instagram loginsystem,instagram session, authenticattion,etc... are django apps ]}
-  Create, project [here, portfolio is project name]
+
 	django-admin startproject portfolio .
-	python manage.py runserver
-  {[ =By default server run on port number = 8000 if we want to change it ..
+		
 	python manage.py runserver 8080 ]}
+
+	python manage.py runserver
+
 
 /////////////////////Activate App////////////////////////////////////////
 ==>Forth, Create App and Activate app:=
 
-  ==create django app:=[here, courses is app name]
 	django-admin startapp courses
 
   ==Activate app:=
-      ==for activating app we go to project[portfolio] then open
-      Settings.py file and add new created app name[courses] at
-      Installed app list[INSTALLED_APP].
+      = In Settings.py like this way
 	'courses.apps.CoursesConfig',
 	'rest_framework',
 	'portfolio',
@@ -72,7 +66,7 @@ Createing Django project:=
 		Ex. Django includes a middleware component, AuthenticationMiddleware, that
 		assiciate users with request using session.
 
-==>Then, Add class in setting.py at MIDDLEWARE
+==>Then, Add class in setting.py at MIDDLEWARE if we need this middleware
 	'corsheaders.CorsMiddleware'
 
 ////////////////Database Connection///////////////////////////////////////////
@@ -88,6 +82,7 @@ Createing Django project:=
 	Exit from Shell := \q
 
   ==Register postgresql in section of portfolio/setting.py
+  
 	DATABASES = {
     	   'default': {
         	'ENGINE': 'django.db.backends.postgresql',
@@ -98,8 +93,9 @@ Createing Django project:=
         	'HOST':'localhost',
         	'PORT': '5432',
    	 }
+   	 
   ==Install adpter of postgresql to connect django with database:=
-	pip install psycopg2
+	pip install psycopg2-binary
 
 //////////////////////////////Database Migration//////////////////////////////////
 ===>First, Check in SQL Shell below command:
@@ -107,11 +103,15 @@ Createing Django project:=
 		\c portfoliodb
 	==Then,Checking any Database.
 		\dt
+==> Whenever you make changes in your model table than run this command to check migrations
 
-==>Second, run migrate command on cmd. thay define all database in postegresql database
+		Python manage.py makemigrations courses
+				OR
+		python3 manage.py makemigrations
+		
+==>run migrate command on cmd. thay define all database in postegresql database
+
 		python manage.py migrate
-==>Then,Start run Server
-		Python manage.py runserver
 
 ==>Then check database command in SQL Shell, That define all migrated database table shows.
 		\dt
@@ -130,21 +130,15 @@ class Courses(models.Model):
 ====>Here for uploading image in website so we need Pillow package install in Django so,
 	pip install pillow
 
-/////////////////////////Activate Model////////////////////////
-==>python make migration[Here, course is App name in Django]
-	Python manage.py makemigrations courses
-==>Then,
-	Python manage.py migrate
-===> If we want to rename table so in model.py file change the table name and 
-    then again run makemigrations and migarate command run
 
-[Not Compalsary]////////////////////////Serialization//////////////////////////////
+////////////////////////Serialization//////////////////////////////
 ==>What are serialization:=
 	They allow complex data sunch as querysets and model instance to be converted to native
      Python data types that can be easily rendered into JSON, XML, or other content type.
  	Serialize also provide deserialization, allowing parsed data to be converted back into complex types,after
      first validating the incoming data.
 ==>create file serializers.py file
+
 from django.db import models
 from django.db.models import fields
 from rest_framework import serializers
@@ -157,34 +151,26 @@ class CountriesSerializer(serializers.ModelSerializer):
         fields = ('id','name','capital')
 
 //////////////////////////Create SuperUser///////////////////
-Django comes with built-in administrative interface page.
-Django superuser is used to manage the Django admin page.
+
+
 ==>Create super user:=
 	python manage.py createsuperuser
-  ==After enter, give details of to create superuser login details
-	Username (leave blank to use 'jaymin'):
-	Email address: jaymind281098@gmail.com
-	Password: jaymin123
-	Password (again): jaymin123
-	The password is too similar to the username.
-	Bypass password validation and create user anyway? [y/N]: y
-	Superuser created successfully.
+
 
 //////////////////Registaring Model With Admin Site///////////////////////
 ==>courses/admin.py
 from django.contrib import admin
 from .models import Course
 # Register your models here.
+
 admin.site.register(Course)
 
-/////////////////////////Create Model Object/////////////////
-===>Admin side, Go to website courses and add object
 
 //////////////////////Templates///////////////////////////
 =>template contains static parts of desired HTML output.
 =>also has some special Syntax for dynamic content.
-=>special template tags{% tags %}
-=>special templates variable{{ variable }}
+=>special template tags {% tags %}
+=>special templates variable {{ variable }}
 =>special template variable and filters: {{ variable | filter  }}
 
 ==>Add templates in Django project directory:=
@@ -195,7 +181,7 @@ admin.site.register(Course)
 	def index(request):
 	    return render(request,'courses/index.html')
 
-=={{% load static %}} used to define static filest
+=={{% load static %}} used to define static files
 ==> Add static files in project:
    = in project index.html file add some static file code
 	{% load static %}
@@ -203,8 +189,9 @@ admin.site.register(Course)
 
 ////////////////////////Displaying data from Database////////////////////////
 ==>views.py
+
 def index(request):
-    courses = Course.objects
+    courses = Course.objects.all()
     return render(request,'courses/index.html',{'courses':courses})
 
 ==>index.html
@@ -214,14 +201,6 @@ def index(request):
             <br>
             {% endfor %}
 
-//////////////////////////////Bootstarap In project//////////////////////////////////
-==>First, Select Album or theme you want to install in  your project.
-  ==then, right click on amd inspect source code and copy all code.and then paste in index.html page in your project.
-
-==>Second, Then copy CSS CDN from Bootstrap Website and JS CDN from Website and paste in their position in project and
-	remove old links of CSS and Js Files.
-
-==>Then, Make Cj=hanges according to your requrement.
 
 //////////////////////////Static Files///////////////////////////////
 ==>Add static file root in setting.py belove to static define
@@ -232,13 +211,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('courses.urls')),
 ]+static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 
 ==>For collecting static file in project run command that is used to make all static file in one location so it is easy to collect in project.
+	
 	python manage.py collectstatic
+	
 ==>For any time we use static file that time run this command for colecting static file.
 
 ===>For load static file in html file use this below html tag
@@ -319,26 +301,12 @@ Add some content here.
 	pa_autoconfigure_django.py https://github.com/jayminpatel2810/todoapp
 
 /////////////////////////////Requirement.txt file/////////////////////
-==>We use requirement.txt file beacause if we create one project then we
-   create our own enviroment so then, after if we transfer that project 
-   to other developer. So that developer doesn't know which libreries are
-   use in this project so.we create requirement.py file to know other 
-   develoer which librerys use so.
-==> First, run command After activating virtul environment:=
-    That give all packages list which we install in this environment
-	pip freeze
-    Then, transfer list of all packages into requirements.txt file
+
+==> Create requirement.txt file
+
 	pip freeze > requirements.txt
-    So, requirements.txt file created and all packeges list added.
 
-==>Second, If suppose we want to install this requrements.txt file
-   packages list install into virtual environment so that for
-   first, create virtual environment.
-   second, Activate virtual environment
-   third, check installed packages
-	pip freeze
-
-   Then, install packages by requirements.txt file that install all packages.
+==> install packages by requirements.txt file that install all packages.
 	pip install -r requirements.txt
 
 
